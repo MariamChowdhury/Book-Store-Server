@@ -25,15 +25,19 @@ res.send('Book shop server.')
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
   const bookCollection = client.db("BookShop").collection("products");
+  const orderCollection = client.db("BookShop").collection("orders");
   console.log('working from inside');
 
 
 //adding product from form with image to db
   app.post('/addProduct',(req,res) => {
     const book=req.body;
+    console.log(book);
     bookCollection.insertOne(book)
+    
     .then(result => {
     res.send(result.insertedCount>0)
+
     })
     })
 
@@ -47,7 +51,7 @@ client.connect(err => {
     })
 
 
-//delete product from db and remove from ui
+//delete product from db
 app.delete('/delete/:id',(req,res) =>{
   bookCollection.deleteOne({_id: ObjectId(req.params.id)})
   .then(result => {
@@ -55,7 +59,40 @@ app.delete('/delete/:id',(req,res) =>{
   })
 })
 
+//taking data from another form to db
+app.post('/addOrder',(req,res) => {
+  const order=req.body;
+  console.log(order);
+  orderCollection.insertOne(order)
+  
+  .then(result => {
+  res.send(result.insertedCount>0)
+
+  })
+  })
+
+
+
+  //showing all orders of a user with email
+  app.post('/ordersByEmail', (req,res) =>{
+    const email=req.body;
+    orderCollection.find({email: email.email})
+    .toArray((err,documents) =>{
+      res.send(documents)
+    })
+  })
+
+
+
 //
+app.get('/orders',(req,res) =>{
+  orderCollection.find()
+  .toArray((err,documents)=>{
+    res.send(documents)
+  })
+})
+
+
 
 
 });
